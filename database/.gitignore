@@ -1,0 +1,30 @@
+# Laravel .gitignore
+
+# Зависимости
+/vendor/
+/node_modules/
+
+# Файлы окружения (содержат пароли!)
+.env
+.env.local
+.env.production.local
+
+# Лог-файлы
+/storage/logs/*
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ОС файлы
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.phar
+
+# npm
+npm-debug.log
+yarn-error.log
