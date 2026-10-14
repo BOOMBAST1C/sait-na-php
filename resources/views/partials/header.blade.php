@@ -2,14 +2,22 @@
     <h1>Мой Новостной Сайт</h1>
     <nav>
         <a href="{{ route('home') }}" style="color: white; margin-right: 15px;">Главная</a>
-        <a href="{{ route('category') }}" style="color: white; margin-right: 15px;">Категория (IT)</a>
+        <a href="{{ route('category') }}" style="color: white; margin-right: 15px;">Категория</a>
         
-        {{-- Проверяем, авторизован ли пользователь --}}
         @auth
-            <a href="{{ route('journalist') }}" style="color: white; margin-right: 15px;">Журналист</a>
-            <a href="{{ route('admin') }}" style="color: white; margin-right: 15px;">Админ</a>
+            {{-- Ссылка "Журналист" видна только Журналистам и Админам --}}
+            @if (auth()->user()->isJournalist() || auth()->user()->isAdmin())
+                <a href="{{ route('journalist') }}" style="color: white; margin-right: 15px;">Журналист</a>
+            @endif
+
+            {{-- Ссылка "Админ" видна только Админам --}}
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('admin') }}" style="color: white; margin-right: 15px;">Админ</a>
+            @endif
             
-            <span style="color: #ffd700; margin-right: 15px;">Привет, {{ Auth::user()->login }}!</span>
+            <span style="color: #ffd700; margin-right: 15px;">
+                Привет, {{ auth()->user()->login }}! ({{ auth()->user()->role->name }})
+            </span>
             
             <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                 @csrf

@@ -43,6 +43,7 @@ class AuthController extends Controller
     }
 
     // 4. Обработать регистрацию
+        // 4. Обработать регистрацию
     public function register(Request $request)
     {
         // Валидация данных
@@ -51,15 +52,18 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
-        // Создаем пользователя. 
-        // Благодаря касту 'hashed' в модели User, пароль зашифруется автоматически!
-        $user = User::create([
+        // Находим роль "user" по умолчанию (мы создали её в сидере)
+        $defaultRole = \App\Models\Role::where('name', 'user')->first();
+
+        // Создаем пользователя, сразу указывая обязательный role_id
+        $user = \App\Models\User::create([
             'login' => $validated['login'],
             'password' => $validated['password'],
+            'role_id' => $defaultRole ? $defaultRole->id : 3, // 3 - это ID роли "user" из нашего сидера
         ]);
 
         // Сразу входим в аккаунт после регистрации
-        Auth::login($user);
+        \Illuminate\Support\Facades\Auth::login($user);
 
         return redirect('/')->with('success', 'Регистрация прошла успешно!');
     }

@@ -2,42 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
+use App\Models\Text;
+use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JournalistController extends Controller
 {
-    /**
-     * Показать форму создания статьи
-     */
     public function create()
     {
-        return view('pages.journalist');
+        // Передаем все категории из БД в форму
+        $categories = Category::all(); 
+        return view('pages.journalist', compact('categories'));
     }
 
-    /**
-     * Сохранить новую статью в базу данных
-     */
     public function store(Request $request)
     {
-        // Валидация данных формы
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'category' => 'required',
-            'content' => 'required',
-            'author' => 'required|max:100',
+            'heading' => 'required|max:255',
+            'text' => 'required',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
-        // Создаем статью в базе данных
-        Article::create([
-            'title' => $validated['title'],
-            'category' => $validated['category'],
-            'content' => $validated['content'],
-            'author' => $validated['author'],
-            'is_published' => $request->has('is_published'),
+        Text::create([
+            'heading' => $validated['heading'],
+            'text' => $validated['text'],
+            'category_id' => $validated['category_id'],
+            'user_id' => Auth::id(), // Автоматически берем ID текущего пользователя
+            'is_published' => true,
         ]);
 
-        // Перенаправляем на главную с сообщением об успехе
         return redirect()->route('home')->with('success', 'Статья успешно опубликована!');
     }
 }

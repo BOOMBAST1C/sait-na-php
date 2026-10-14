@@ -2,33 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
+use App\Models\Text;
+use App\Models\User;
+use App\Models\Role;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    /**
-     * Показать панель администратора со списком всех статей
-     */
-    public function index()
-    {
-        // Получаем все статьи (включая неопубликованные), по 10 на страницу
-        $articles = Article::orderBy('created_at', 'desc')->paginate(10);
-        
-        return view('pages.admin', compact('articles'));
-    }
-
-    /**
-     * Удалить статью по ID
-     */
+public function index()
+{
+    $texts = Text::with(['user', 'category'])->orderBy('created_at', 'desc')->get(); // Было paginate(10)
+    $users = User::with('role')->get(); // Было paginate(10)
+    $roles = Role::all();
+    
+    return view('pages.admin', compact('texts', 'users', 'roles'));
+}
     public function destroy($id)
     {
-        // Находим статью или выбрасываем ошибку 404
-        $article = Article::findOrFail($id);
+        $text = Text::findOrFail($id);
+        $text->delete();
         
-        // Удаляем статью
-        $article->delete();
-        
-        // Перенаправляем обратно в админку с сообщением
         return redirect()->route('admin')->with('success', 'Статья удалена!');
+    }
+
+    public function assignRole(Request $request, $userId)
+    {
+        $validated = $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $user = User::findOrFail($userId);
+        // Просто обновляем поле role_id
+        $user->update(['role_id' => $validated['role_id']]);
+
+        return redirect()->route('admin')->with('success', 'Роль изменена!');
     }
 }

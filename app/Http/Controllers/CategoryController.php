@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
+use App\Models\Text;
 
 class CategoryController extends Controller
 {
-    /**
-     * Страница категории - вывод статей одной категории (пока только IT)
-     */
-    public function index()
-    {
-        // Фильтруем статьи по категории "IT" и только опубликованные
-        $articles = Article::where('category', 'IT')
-            ->where('is_published', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
+public function index()
+{
+    $texts = Text::with(['user', 'category'])
+        ->whereHas('category', function($query) {
+            $query->where('name', 'IT');
+        })
+        ->where('is_published', true)
+        ->orderBy('created_at', 'desc')
+        ->get(); // Было paginate(5), стало get()
         
-        return view('pages.category', compact('articles'));
-    }
+    return view('pages.category', compact('texts'));
+}
 }

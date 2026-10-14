@@ -12,38 +12,67 @@
         </div>
     @endif
 
+    <h3>Управление ролями пользователей</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <thead>
+            <tr style="background: #f4f4f4;">
+                <th style="border: 1px solid #ddd; padding: 10px;">ID</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Логин</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Текущая роль</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($users as $user)
+                <tr>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $user->id }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $user->login }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">
+                        {{ $user->role ? $user->role->name : 'Без роли' }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">
+                        <form action="{{ route('admin.assignRole', $user->id) }}" method="POST" style="display: flex; gap: 10px;">
+                            @csrf
+                            <select name="role_id" style="padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                                        {{ $role->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit" style="background: #28a745; color: white; padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                                Назначить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
     <h3>Управление статьями</h3>
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
         <thead>
             <tr style="background: #f4f4f4;">
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">ID</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Заголовок</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Автор</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Категория</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Статус</th>
-                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Действия</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">ID</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Заголовок</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Автор</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Категория</th>
+                <th style="border: 1px solid #ddd; padding: 10px;">Действия</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($articles as $article)
+            @forelse ($texts as $text)
                 <tr>
-                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $article->id }}</td>
-                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $article->title }}</td>
-                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $article->author }}</td>
-                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $article->category }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $text->id }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $text->heading }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $text->user->login }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $text->category->name }}</td>
                     <td style="border: 1px solid #ddd; padding: 10px;">
-                        @if ($article->is_published)
-                            <span style="color: green;">✓ Опубликовано</span>
-                        @else
-                            <span style="color: orange;">⏳ Черновик</span>
-                        @endif
-                    </td>
-                    <td style="border: 1px solid #ddd; padding: 10px;">
-                        <a href="#" style="color: #007bff; margin-right: 10px;">Редактировать</a>
-                        <form action="{{ route('admin.destroy', $article->id) }}" method="POST" style="display: inline;">
+                        <form action="{{ route('admin.destroy', $text->id) }}" method="POST" style="display: inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0;" 
+                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer;" 
                                     onclick="return confirm('Удалить статью?')">
                                 Удалить
                             </button>
@@ -52,42 +81,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="border: 1px solid #ddd; padding: 10px; text-align: center; color: #666;">
-                        Нет статей для отображения
-                    </td>
+                    <td colspan="5" style="border: 1px solid #ddd; padding: 10px; text-align: center;">Нет статей</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
+    
 
-    @if ($articles->hasPages())
-        <div style="margin-top: 30px;">
-            {{ $articles->links() }}
-        </div>
-    @endif
-
-    <h3>Управление ролями пользователей</h3>
-    <form action="#" method="POST" style="max-width: 600px;">
-        @csrf
-        <div style="margin-bottom: 15px;">
-            <label for="user" style="display: block; margin-bottom: 5px; font-weight: bold;">Пользователь:</label>
-            <select id="user" name="user" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="1">Иван Петров (Журналист)</option>
-                <option value="2">Анна Сидорова (Журналист)</option>
-            </select>
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label for="role" style="display: block; margin-bottom: 5px; font-weight: bold;">Новая роль:</label>
-            <select id="role" name="role" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="journalist">Журналист</option>
-                <option value="admin">Администратор</option>
-                <option value="user">Пользователь</option>
-            </select>
-        </div>
-
-        <button type="submit" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
-            Изменить роль
-        </button>
-    </form>
 @endsection

@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
+use App\Models\Text;
 
 class HomeController extends Controller
 {
-    /**
-     * Главная страница - вывод всех опубликованных статей
-     */
-    public function index()
-    {
-        // Получаем все опубликованные статьи, сортируем от новых к старым, по 5 на страницу
-        $articles = Article::where('is_published', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
-        
-        // Передаем статьи в шаблон pages/home.blade.php
-        return view('pages.home', compact('articles'));
-    }
+public function index()
+{
+    $texts = Text::with(['user', 'category'])
+        ->where('is_published', true)
+        ->orderBy('created_at', 'desc')
+        ->get(); // Было paginate(5), стало get()
+    
+    return view('pages.home', compact('texts'));
+}
+    public function show($id)
+{
+    $text = Text::with(['user', 'category'])->findOrFail($id);
+    return view('pages.show', compact('text'));
+}
 }
